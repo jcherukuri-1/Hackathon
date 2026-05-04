@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EB1A Experts — Pinnacle Multi-Role Prototype v2</title>
+<style>
+/* ─── RESET & BASE ──────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:auto;overflow-y:auto;}body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#0D0D1A;color:#fff;min-height:100vh;}
+
+/* ─── ROLE SELECTOR SCREEN ──────────────────────────────────────── */
+#role-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0D0D1A 0%,#1A0D2E 100%);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;overflow-y:auto;}
+.rs-logo{font-size:1rem;font-weight:700;color:#7C3AED;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem;}
+.rs-title{font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:.3rem;text-align:center;}
+.rs-sub{font-size:.9rem;color:#6B7280;margin-bottom:1.25rem;text-align:center;}
+.rs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;max-width:820px;width:100%;}
+.rs-card{border-radius:16px;padding:1.25rem 1.5rem;cursor:pointer;transition:all .25s;border:2px solid transparent;position:relative;overflow:hidden;}
+.rs-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .25s;}
+.rs-card:hover{transform:translateY(-3px);}
+.rs-card:hover::before{opacity:1;}
+.rs-card.client{background:#0F1729;border-color:#1E2761;}
+.rs-card.client:hover{border-color:#5B2D8E;box-shadow:0 0 40px rgba(91,45,142,.3);}
+.rs-card.attorney{background:#0F1A14;border-color:#0B4D2E;}
+.rs-card.attorney:hover{border-color:#059669;box-shadow:0 0 40px rgba(5,150,105,.25);}
+.rs-card.sales{background:#1A0D00;border-color:#7C2D12;}
+.rs-card.sales:hover{border-color:#D97706;box-shadow:0 0 40px rgba(217,119,6,.25);}
+.rs-card.ops{background:#0D1626;border-color:#0E3A5A;}
+.rs-card.ops:hover{border-color:#0891B2;box-shadow:0 0 40px rgba(8,145,178,.25);}
+.rs-icon{font-size:1.5rem;margin-bottom:.4rem;}
+.rs-role{font-size:1rem;font-weight:700;margin-bottom:.3rem;}
+.rs-desc{font-size:.82rem;line-height:1.5;opacity:.7;}
+.rs-badge{position:absolute;top:.75rem;right:.75rem;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px;}
+
+/* ─── MAIN APP ──────────────────────────────────────────────────── */
+#app{display:none;}
+
+/* ROLE TOPBAR */
+.role-bar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:fixed;top:0;left:0;right:0;z-index:200;}
+.role-bar-left{display:flex;align-items:center;gap:.75rem;font-size:.82rem;font-weight:600;}
+.role-indicator{display:flex;align-items:center;gap:.4rem;padding:.25rem .75rem;border-radius:20px;font-size:.72rem;font-weight:700;}
+.switch-btn{background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.6);padding:.25rem .7rem;border-radius:6px;cursor:pointer;font-size:.72rem;font-weight:500;transition:all .2s;}
+.switch-btn:hover{background:rgba(255,255,255,.14);color:#fff;}
+
+/* SIDENAV */
+.sidenav{position:fixed;top:44px;left:0;bottom:0;width:220px;padding:1rem .75rem;display:flex;flex-direction:column;gap:.25rem;border-right:1px solid rgba(255,255,255,.06);overflow-y:auto;z-index:150;}
+.snav-section{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#4B5563;padding:.5rem .5rem .25rem;margin-top:.5rem;}
+.snav-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .65rem;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:500;color:#9CA3AF;transition:all .2s;border:none;background:none;width:100%;text-align:left;}
+.snav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+.snav-item.active{color:#fff;font-weight:600;}
+.snav-icon{font-size:.95rem;flex-shrink:0;width:18px;text-align:center;}
+
+/* MAIN CONTENT */
+.main{margin-left:220px;padding-top:44px;min-height:100vh;}
+.view{display:none;padding:1.75rem;}
+.view.active{display:block;}
+
+/* PAGE HEADER */
+.page-hdr{margin-bottom:1.5rem;}
+.page-hdr h1{font-size:1.5rem;font-weight:800;}
+.page-hdr p{font-size:.85rem;opacity:.55;margin-top:.2rem;}
+.page-hdr-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+
+/* CARDS */
+.card{border-radius:12px;padding:1.35rem;border:1px solid rgba(255,255,255,.07);}
+.card-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.5;margin-bottom:.6rem;}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+
+/* STAT */
+.stat{border-radius:12px;padding:1.2rem 1.4rem;border:1px solid rgba(255,255,255,.07);}
+.stat-val{font-size:1.9rem;font-weight:800;}
+.stat-lbl{font-size:.75rem;opacity:.5;margin-top:.15rem;}
+.stat-delta{font-size:.7rem;font-weight:600;margin-top:.2rem;}
+
+/* PROGRESS */
+.prog{background:rgba(255,255,255,.08);border-radius:99px;height:7px;overflow:hidden;margin-top:.4rem;}
+.prog-fill{height:100%;border-radius:99px;transition:width .9s ease;}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:.82rem;}
+.tbl th{text-align:left;padding:.5rem .85rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.4;border-bottom:1px solid rgba(255,255,255,.08);}
+.tbl td{padding:.7rem .85rem;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;}
+.tbl tr:last-child td{border:none;}
+.tbl tr:hover td{background:rgba(255,255,255,.03);}
+.tbl-section td{opacity:.4;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:.4rem .85rem;background:rgba(255,255,255,.03);}
+
+/* BADGE */
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.67rem;font-weight:700;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border-radius:8px;border:none;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .2s;}
+
+/* RING CHART */
+.ring-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;}
+.ring-inner{position:absolute;text-align:center;}
+
+/* TIMELINE DOTS */
+.tl{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:flex;gap:.85rem;position:relative;}
+.tl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.tl-line{position:absolute;left:5px;top:15px;bottom:-10px;width:2px;background:rgba(255,255,255,.08);}
+.tl-item:last-child .tl-line{display:none;}
+.tl-body{padding-bottom:1.1rem;}
+.tl-title{font-size:.85rem;font-weight:600;margin-bottom:.2rem;}
+.tl-sub{font-size:.75rem;opacity:.5;}
+.tl-timing{font-size:.68rem;font-weight:700;margin-top:.3rem;opacity:.7;}
+
+/* PHASE PILL */
+.phase-pill{padding:.3rem .85rem;border-radius:99px;font-size:.75rem;font-weight:700;display:inline-block;margin-bottom:.6rem;}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:.65rem 1.1rem;border-radius:10px;font-size:.8rem;font-weight:500;opacity:0;transform:translateY(6px);transition:all .3s;z-index:9999;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+
+/* ─── CLIENT THEME ─── dark navy-purple premium */
+.theme-client .role-bar{background:#0D0D1A;border-bottom:1px solid rgba(91,45,142,.3);}
+.theme-client .role-indicator{background:rgba(91,45,142,.2);color:#A78BFA;}
+.theme-client .sidenav{background:#0D0D1A;}
+.theme-client .snav-item.active{background:rgba(91,45,142,.18);color:#C4B5FD;}
+.theme-client .main{background:#0D0D1A;}
+.theme-client .card{background:#13132A;}
+.theme-client .stat{background:#13132A;}
+.theme-client .toast{background:#5B2D8E;color:#fff;}
+.theme-client .btn-primary{background:#5B2D8E;color:#fff;}
+.theme-client .btn-primary:hover{background:#6D35A8;}
+
+/* ─── ATTORNEY THEME ─── clean white minimal */
+.theme-attorney .role-bar{background:#1A2E1A;border-bottom:1px solid rgba(5,150,105,.3);}
+.theme-attorney .role-indicator{background:rgba(5,150,105,.2);color:#6EE7B7;}
+.theme-attorney .sidenav{background:#111D11;}
+.theme-attorney .snav-item.active{background:rgba(5,150,105,.15);color:#A7F3D0;}
+.theme-attorney .main{background:#0F180F;}
+.theme-attorney .card{background:#151F15;}
+.theme-attorney .stat{background:#151F15;}
+.theme-attorney .toast{background:#059669;color:#fff;}
+.theme-attorney .btn-primary{background:#059669;color:#fff;}
+.theme-attorney .btn-primary:hover{background:#047857;}
+
+/* ─── SALES THEME ─── bold amber-gold dark */
+.theme-sales .role-bar{background:#1A1000;border-bottom:1px solid rgba(217,119,6,.3);}
+.theme-sales .role-indicator{background:rgba(217,119,6,.2);color:#FCD34D;}
+.theme-sales .sidenav{background:#120D00;}
+.theme-sales .snav-item.active{background:rgba(217,119,6,.15);color:#FDE68A;}
+.theme-sales .main{background:#0F0A00;}
+.theme-sales .card{background:#1A1200;}
+.theme-sales .stat{background:#1A1200;}
+.theme-sales .toast{background:#D97706;color:#fff;}
+.theme-sales .btn-primary{background:#D97706;color:#000;}
+.theme-sales .btn-primary:hover{background:#B45309;}
+
+/* ─── OPS THEME ─── data-heavy teal dark ─── */
+.theme-ops .role-bar{background:#001820;border-bottom:1px solid rgba(8,145,178,.3);}
+.theme-ops .role-indicator{background:rgba(8,145,178,.2);color:#67E8F9;}
+.theme-ops .sidenav{background:#001220;}
+.theme-ops .snav-item.active{background:rgba(8,145,178,.15);color:#A5F3FC;}
+.theme-ops .main{background:#000E18;}
+.theme-ops .card{background:#001824;}
+.theme-ops .stat{background:#001824;}
+.theme-ops .toast{background:#0891B2;color:#fff;}
+.theme-ops .btn-primary{background:#0891B2;color:#fff;}
+.theme-ops .btn-primary:hover{background:#0E7490;}
+
+/* CHART BARS */
+.bar-chart{display:flex;align-items:flex-end;gap:.5rem;height:110px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:.2rem;}
+.bar-seg{width:100%;border-radius:4px 4px 0 0;transition:height .7s ease;}
+.bar-lbl{font-size:.62rem;opacity:.5;text-align:center;}
+.bar-num{font-size:.68rem;font-weight:700;}
+
+/* SCORE RING (SVG) */
+.score-big{font-size:2rem;font-weight:800;}
+.score-sub{font-size:.7rem;opacity:.5;}
+
+/* EVIDENCE ROW */
+.ev-row{display:flex;align-items:center;gap:.75rem;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.ev-row:last-child{border:none;}
+.ev-icon{font-size:1rem;width:24px;text-align:center;flex-shrink:0;}
+.ev-label{font-size:.82rem;flex:1;}
+.ev-count{font-size:.82rem;font-weight:700;width:50px;text-align:center;}
+.ev-bar-wrap{flex:1;max-width:120px;}
+
+/* PLAN COMPARE TABLE */
+.pc-hdr{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:.5rem .75rem;}
+.pc-cell{padding:.6rem .75rem;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.05);}
+.pc-cell.new-item{color:#A78BFA;font-weight:600;}
+
+/* CITATION CHART */
+.cit-bars{display:flex;align-items:flex-end;gap:3px;height:80px;margin-top:.5rem;}
+.cit-bar{flex:1;border-radius:2px 2px 0 0;min-height:2px;transition:height .5s;}
+
+/* ALERT */
+.alert{border-radius:10px;padding:.8rem 1rem;font-size:.8rem;border-left:3px solid;margin-bottom:.75rem;}
+
+/* ROUTE CARD */
+.route-item{border-radius:10px;padding:.9rem 1rem;cursor:pointer;transition:all .2s;margin-bottom:.6rem;border:1.5px solid rgba(255,255,255,.07);}
+.route-item:hover{border-color:rgba(217,119,6,.4);background:rgba(217,119,6,.05);}
+.route-item.active{border-color:#D97706;background:rgba(217,119,6,.1);}
+.route-signal{font-size:.85rem;font-weight:600;margin-bottom:.2rem;}
+.route-detail{display:none;margin-top:.65rem;padding:.7rem;background:rgba(0,0,0,.3);border-radius:8px;font-size:.78rem;line-height:1.6;opacity:.8;}
+.route-item.active .route-detail{display:block;}
+
+/* OPS CLIENT ROW */
+.client-row{display:flex;align-items:center;gap:1rem;padding:.8rem .9rem;border-radius:10px;border:1px solid rgba(255,255,255,.05);margin-bottom:.5rem;background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;}
+.client-row:hover{background:rgba(8,145,178,.07);border-color:rgba(8,145,178,.2);}
+.client-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0;}
+.client-info{flex:1;}
+.client-name{font-size:.88rem;font-weight:600;}
+.client-meta{font-size:.72rem;opacity:.5;}
+.client-phase{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;}
+.client-score{font-size:1.1rem;font-weight:800;width:48px;text-align:center;}
+.client-risk{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;}
+
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr;}.rs-grid{grid-template-columns:1fr;}.sidenav{width:180px;}.main{margin-left:180px;}}
+
+.rs-card.eval{background:#0F1A14;border-color:#065F46;}
+.rs-card.eval:hover{border-color:#10B981;box-shadow:0 0 40px rgba(16,185,129,.25);}
+.theme-eval .role-bar{background:#071A10;border-bottom:1px solid rgba(16,185,129,.3);}
+.theme-eval .role-indicator{background:rgba(16,185,129,.2);color:#6EE7B7;}
+.theme-eval .sidenav{background:#051008;}
+.theme-eval .snav-item.active{background:rgba(16,185,129,.15);color:#A7F3D0;}
+.theme-eval .main{background:#071A10;}
+.theme-eval .card,.theme-eval .stat{background:#0F2018;}
+.theme-eval .toast{background:#059669;color:#fff;}
+.eq-wrap{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.1rem 1.2rem;}
+.eq-lbl{font-size:.82rem;font-weight:700;color:#6EE7B7;margin-bottom:.55rem;}
+.eq-btn{display:block;width:100%;padding:.6rem .85rem;margin-bottom:.4rem;border-radius:8px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#D1FAE5;font-size:.83rem;font-family:inherit;text-align:left;cursor:pointer;transition:all .15s;}
+.eq-btn:hover{border-color:#10B981;background:rgba(16,185,129,.1);color:#fff;}
+.eq-btn.picked{border-color:#10B981!important;background:rgba(16,185,129,.22)!important;color:#fff!important;font-weight:700;box-shadow:0 0 0 2px rgba(16,185,129,.3);}
+.esec{display:none;}.esec.active{display:block;}
+.esec-hdr{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#10B981;margin-bottom:.75rem;}
+.e-prog{background:rgba(255,255,255,.08);border-radius:99px;height:7px;overflow:hidden;margin-bottom:.3rem;}
+.e-prog-fill{height:100%;background:#10B981;border-radius:99px;width:0%;transition:width .4s;}
+.e-btn{background:#059669;color:#fff;border:none;padding:.55rem 1.4rem;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.e-btn:hover{background:#047857;}
+.e-btn-back{background:rgba(255,255,255,.07);color:#9CA3AF;border:1px solid rgba(255,255,255,.12);padding:.55rem 1.4rem;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.e-btn-back:hover{background:rgba(255,255,255,.12);color:#fff;}
+.e-gap-row{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.8rem;}
+.e-gap-row:last-child{border:none;}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- ROLE SELECTOR -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="role-screen">
+  <div class="rs-logo">EB1A Experts</div>
+  <div class="rs-title">Pinnacle — Choose Your Role</div>
+  <div class="rs-sub">Each perspective shows a distinct view of the Pinnacle plan. Select one to enter.</div>
+  <div class="rs-grid">
+    <div class="rs-card client" onclick="enterRole('client')">
+      <div class="rs-badge" style="background:rgba(91,45,142,.3);color:#C4B5FD;">Premium Dark</div>
+      <div class="rs-icon">👤</div>
+      <div class="rs-role" style="color:#A78BFA;">Client Portal</div>
+      <div class="rs-desc">Your EB1A journey — publication progress, reach tracking, phase roadmap, and petition readiness. What Arjun Mehta sees as a Pinnacle member.</div>
+    </div>
+    <div class="rs-card attorney" onclick="enterRole('attorney')">
+      <div class="rs-badge" style="background:rgba(5,150,105,.3);color:#6EE7B7;">Clean Minimal</div>
+      <div class="rs-icon">⚖️</div>
+      <div class="rs-role" style="color:#6EE7B7;">Immigration Attorney</div>
+      <div class="rs-desc">Dossier quality, USCIS evidence coverage, publication reach and circulation history, petition readiness score, and the attorney briefing document. What counsel receives.</div>
+    </div>
+    <div class="rs-card sales" onclick="enterRole('sales')">
+      <div class="rs-badge" style="background:rgba(217,119,6,.3);color:#FCD34D;">Bold & Data</div>
+      <div class="rs-icon">💼</div>
+      <div class="rs-role" style="color:#FCD34D;">Sales Consultation</div>
+      <div class="rs-desc">Live plan comparison, opportunity simulator, projected readiness score, and a plan recommendation generator for use during client calls.</div>
+    </div>
+    <div class="rs-card ops" onclick="enterRole('ops')">
+      <div class="rs-badge" style="background:rgba(8,145,178,.3);color:#67E8F9;">Data Heavy</div>
+      <div class="rs-icon">📊</div>
+      <div class="rs-role" style="color:#67E8F9;">Editorial Operations</div>
+      <div class="rs-desc">Editor workload, full client pipeline, phase status across all Pinnacle clients, at-risk flags, opportunity tracking by cohort, and capacity planning.</div>
+    </div>
+    <div class="rs-card eval" onclick="enterRole('eval')">
+      <div class="rs-badge" style="background:rgba(16,185,129,.3);color:#6EE7B7;">Free Tool</div>
+      <div class="rs-icon">🎯</div>
+      <div class="rs-role" style="color:#6EE7B7;">Profile Evaluator</div>
+      <div class="rs-desc">Answer 12 questions about your experience, publications, awards and visa status. Get an EB1A readiness score, gap analysis, plan recommendation and 90-day action plan.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- APP SHELL -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- Role top bar -->
+  <div class="role-bar">
+    <div class="role-bar-left">
+      <span style="font-size:.85rem;font-weight:800;letter-spacing:.04em;">EB1A Experts</span>
+      <span style="opacity:.2;">|</span>
+      <span class="role-indicator" id="role-indicator">–</span>
+      <span id="role-subtitle" style="font-size:.75rem;opacity:.4;"></span>
+    </div>
+    <button class="switch-btn" onclick="switchRole()">⇄ Switch Role</button>
+  </div>
+
+  <!-- Side nav -->
+  <div class="sidenav" id="sidenav"></div>
+
+  <!-- Main content -->
+  <div class="main" id="main-area"></div>
+  <div id="eval-shell" class="main" style="display:none;">
+  <div id="ev-q-view">
+    <div class="page-hdr" style="margin-bottom:1.25rem;">
+      <h1 style="color:#6EE7B7;">EB1A Profile Evaluator</h1>
+      <p style="color:#9CA3AF;margin-top:.2rem;">Answer all 12 questions. Your selection stays highlighted. Complete all questions in a section before proceeding.</p>
+    </div>
+    <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:1rem 1.4rem;margin-bottom:1.25rem;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:.35rem;">
+        <span id="e-sec-lbl" style="font-size:.78rem;font-weight:600;color:#10B981;">Section 1 of 3 — Background</span>
+        <span id="e-ans-cnt" style="font-size:.72rem;color:#6B7280;">0 / 12 answered</span>
+      </div>
+      <div class="e-prog"><div class="e-prog-fill" id="e-prog"></div></div>
+    </div>
+    <div class="esec active" id="e-s1">
+      <div class="esec-hdr">Section 1 of 3 — Professional Background</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div class="eq-wrap"><div class="eq-lbl">Years of U.S. work experience?</div><div id="eg1">
+          <button class="eq-btn" onclick="EP(1,5,this)">Less than 3 years</button>
+          <button class="eq-btn" onclick="EP(1,10,this)">3-5 years</button>
+          <button class="eq-btn" onclick="EP(1,15,this)">5-7 years</button>
+          <button class="eq-btn" onclick="EP(1,20,this)">7+ years</button>
+        </div></div>
+        <div class="eq-wrap"><div class="eq-lbl">Current visa status?</div><div id="eg2">
+          <button class="eq-btn" onclick="EP(2,8,this)">F-1 OPT / STEM OPT</button>
+          <button class="eq-btn" onclick="EP(2,15,this)">H-1B</button>
+          <button class="eq-btn" onclick="EP(2,12,this)">EAD / GC Pending</button>
+          <button class="eq-btn" onclick="EP(2,10,this)">Other employment visa</button>
+        </div></div>
+        <div class="eq-wrap"><div class="eq-lbl">Primary technical domain?</div><div id="eg3">
+          <button class="eq-btn" onclick="EP(3,10,this)">ML / AI / Data Science</button>
+          <button class="eq-btn" onclick="EP(3,10,this)">Cloud / DevOps / SRE</button>
+          <button class="eq-btn" onclick="EP(3,10,this)">Cybersecurity</button>
+          <button class="eq-btn" onclick="EP(3,10,this)">Software Engineering</button>
+        </div></div>
+        <div class="eq-wrap"><div class="eq-lbl">Target petition timeline?</div><div id="eg4">
+          <button class="eq-btn" onclick="EP(4,5,this)">Within 6 months</button>
+          <button class="eq-btn" onclick="EP(4,10,this)">6-12 months</button>
+          <button class="eq-btn" onclick="EP(4,18,this)">12-24 months</button>
+          <button class="eq-btn" onclick="EP(4,20,this)">24+ months / flexible</button>
+        </div></div>
+      </div>
+      <div style="text-align:right;"><button class="e-btn" onclick="EN(2)">Next: Publications &rarr;</button></div>
+    </div>
+    <div class="esec" id="e-s2">
+      <div class="esec-hdr">Section 2 of 3 — Publications &amp; Research</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div class="eq-wrap"><div class="eq-lbl">Articles published so far?</div><div id="eg5">
+          <button class="eq-btn" onclick="EP(5,0,this)">None</button>
+          <button class="eq-btn" onclick="EP(5,8,this)">1-2 articles</button>
+          <button class="eq-btn" onclick="EP(5,15,this)">3-5 articles</button>
+          <button class="eq-btn" onclick="EP(5,20,this)">6 or more</button>
+        </div></div>
+        <div class="eq-wrap"><div class="eq-lbl">Best publication venue?</div><div id="eg6">
+          <button class="eq-btn" onclick="EP(6,0,this)">Not published yet</button>
+          <button class="eq-btn" onclick="EP(6,5,this)">Domain blogs / non-indexed</button>
+          <button class="eq-btn" onclick="EP(6,10,this)">Indexed journals (Scopus/WoS)</button>
+          <button class="eq-btn" onclick="EP(6,18,this)">IEEE / ACM / Springer / Elsevier</button>
+        </div></div>
+        <div class="eq-wrap"><div class="eq-lbl">Served as a peer reviewer?</div><div id="eg7">
+          <button class="eq-btn" onclick="EP(7,0,this)">No</button>
+          <button class="eq-btn" onclick="EP(7,8,this)">Yes - informally / once</button>
+          <button class="eq-btn" onclick="EP(7,15,this)">Yes - verified, 2+ journals</button>
+        </div></div>
+        <div class="eq-wrap"><div class="eq-lbl">Conference presentations?</div><div id="eg8">
+          <button class="eq-btn" onclick="EP(8,0,this)">None</button>
+          <button class="eq-btn" onclick="EP(8,6,this)">Local / regional events</button>
+          <button class="eq-btn" onclick="EP(8,12,this)">National conference</button>
+          <button class="eq-btn" onclick="EP(8,18,this)">IEEE / ACM / top-tier venue</button>
+        </div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <button class="e-btn-back" onclick="EB(1)">&larr; Back</button>
+        <button class="e-btn" onclick="EN(3)">Next: Acclaim &rarr;</button>
+      </div>
+    </div>
+    <div class="esec" id="e-s3">
+      <div class="esec-hdr">Section 3 of 3 — Acclaim &amp; Recognition</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div class="eq-wrap"><div class="eq-lbl">Professional awards received?</div><div id="eg9">
+          <button class="eq-btn" onclick="EP(9,0,this)">None</button>
+          <button class="eq-btn" onclick="EP(9,8,this)">1 employer / local award</button>
+          <button class="eq-btn" onclick="EP(9,14,this)">2+ industry awards</button>
+          <button class="eq-btn" onclick="EP(9,20,this)">National / international award</button>
+        </div></div>
+        <div class="eq-wrap"><div class="eq-lbl">Speaking engagements?</div><div id="eg10">
+          <button class="eq-btn" onclick="EP(10,0,this)">None</button>
+          <button class="eq-btn" onclick="EP(10,6,this)">Webinars / internal talks</button>
+          <button class="eq-btn" onclick="EP(10,12,this)">External conference speaker</button>
+          <button class="eq-btn" onclick="EP(10,18,this)">Keynote / invited speaker</button>
+        </div></div>
+        <div class="eq-wrap"><div class="eq-lbl">Professional memberships?</div><div id="eg11">
+          <button class="eq-btn" onclick="EP(11,0,this)">None</button>
+          <button class="eq-btn" onclick="EP(11,5,this)">1-2 general memberships</button>
+          <button class="eq-btn" onclick="EP(11,10,this)">3+ IEEE / ACM societies</button>
+          <button class="eq-btn" onclick="EP(11,15,this)">Editorial board / committee</button>
+        </div></div>
+        <div class="eq-wrap"><div class="eq-lbl">Recommendation letters available?</div><div id="eg12">
+          <button class="eq-btn" onclick="EP(12,0,this)">None identified</button>
+          <button class="eq-btn" onclick="EP(12,5,this)">1-2 potential recommenders</button>
+          <button class="eq-btn" onclick="EP(12,10,this)">3-5 strong recommenders</button>
+          <button class="eq-btn" onclick="EP(12,15,this)">6+ incl. international experts</button>
+        </div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <button class="e-btn-back" onclick="EB(2)">&larr; Back</button>
+        <button class="e-btn" style="background:#047857;font-size:.9rem;padding:.6rem 1.6rem;" onclick="ECALC()">Calculate My Score</button>
+      </div>
+    </div>
+  </div>
+  <div id="ev-r-view" style="display:none;">
+    <div class="page-hdr" style="margin-bottom:1.25rem;">
+      <h1 style="color:#6EE7B7;">Your EB1A Readiness Score</h1>
+    </div>
+    <div id="e-banner" style="border-radius:16px;padding:2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);">
+      <div style="text-align:center;flex-shrink:0;">
+        <div id="e-score" style="font-size:5rem;font-weight:900;line-height:1;color:#10B981;"></div>
+        <div style="font-size:.82rem;color:#6B7280;margin-top:.3rem;">out of 100</div>
+      </div>
+      <div style="flex:1;">
+        <div id="e-tier" style="font-size:1.3rem;font-weight:800;margin-bottom:.4rem;"></div>
+        <div id="e-desc" style="font-size:.83rem;color:#9CA3AF;line-height:1.6;margin-bottom:.75rem;"></div>
+        <div id="e-pill"></div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.4rem;margin-bottom:1.25rem;">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:.75rem;">Evidence Gap Analysis</div>
+      <div id="e-gaps"></div>
+    </div>
+    <div id="e-planbox" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.4rem;margin-bottom:1.25rem;"></div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.4rem;margin-bottom:1.25rem;">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:.75rem;">Your 90-Day Action Plan</div>
+      <div id="e-acts"></div>
+    </div>
+    <div style="display:flex;gap:.75rem;">
+      <button class="e-btn" onclick="ERESET()">Retake Assessment</button>
+      <button class="e-btn-back" onclick="window.open('https://eb1aexperts.com/contact-us#calendar','_blank')">Book Free Consultation</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────────────────────────
+let currentRole = null;
+let currentView = null;
+
+// ── DATA ────────────────────────────────────────────────────────────────────
+const CLIENT = {
+  name: "Arjun Mehta",
+  plan: "Pinnacle Growth",
+  phase: 2,
+  month: 14,
+  totalMonths: 18,
+  score: 62,
+  articles: 3,
+  opportunities: 5,
+  peerReview: 2,
+  awards: 1,
+  speaking: 1,
+};
+
+const OPS_CLIENTS = [
+  { name:"Arjun Mehta",    init:"AM", color:"5B2D8E", phase:2, month:14, score:62, plan:"Growth", risk:"On Track",  editor:"Priya S." },
+  { name:"Kavitha Iyer",   init:"KI", color:"0891B2", phase:3, month:19, score:78, plan:"Premier", risk:"On Track", editor:"Raj M." },
+  { name:"Sanjay Patel",   init:"SP", color:"059669", phase:1, month:4,  score:31, plan:"Growth",  risk:"On Track", editor:"Priya S." },
+  { name:"Divya Krishnan", init:"DK", color:"D97706", phase:2, month:11, score:48, plan:"Growth",  risk:"At Risk",  editor:"Raj M." },
+  { name:"Kiran Reddy",    init:"KR", color:"DC2626", phase:4, month:22, score:91, plan:"Premier", risk:"Petition Ready", editor:"Dev K." },
+  { name:"Meera Nair",     init:"MN", color:"7C3AED", phase:1, month:2,  score:18, plan:"Premier", risk:"On Track", editor:"Dev K." },
+];
+
+// ── ROLES ───────────────────────────────────────────────────────────────────
+const ROLES = {
+  client: {
+    label: "Client Portal",
+    subtitle: "Arjun Mehta — Month 14 of 18",
+    accent: "#A78BFA",
+    nav: [
+      { id:"cl-overview",  icon:"🏠", label:"Overview" },
+      { id:"cl-roadmap",   icon:"🗺️", label:"My Roadmap" },
+      { id:"cl-citations", icon:"📊", label:"Opportunities" },
+      { id:"cl-articles",  icon:"📄", label:"Publications" },
+      { id:"cl-acclaim",   icon:"🏆", label:"Acclaim" },
+      { id:"cl-petition",  icon:"⚖️", label:"Petition Readiness" },
+    ]
+  },
+  attorney: {
+    label: "Attorney View",
+    subtitle: "Arjun Mehta — Petition Dossier",
+    accent: "#6EE7B7",
+    nav: [
+      { id:"at-summary",   icon:"📋", label:"Case Summary" },
+      { id:"at-evidence",  icon:"📁", label:"Evidence Dossier" },
+      { id:"at-citations", icon:"🔗", label:"Opportunities" },
+      { id:"at-brief",     icon:"📝", label:"Attorney Brief" },
+      { id:"at-readiness", icon:"✅", label:"Readiness Score" },
+    ]
+  },
+  sales: {
+    label: "Sales Consultation",
+    subtitle: "Live Client Consultation Tool",
+    accent: "#FCD34D",
+    nav: [
+      { id:"sl-compare",   icon:"⚡", label:"Plan Comparison" },
+      { id:"sl-simulator", icon:"📈", label:"Opportunities" },
+      { id:"sl-routing",   icon:"🧭", label:"Client Routing" },
+      { id:"sl-pricing",   icon:"💰", label:"Pricing & ROI" },
+    ]
+  },
+  eval: {
+    label: "Profile Evaluator",
+    subtitle: "EB1A Readiness Self-Assessment",
+    accent: "#10B981",
+    nav: [
+      { id:"ev-q", icon:"🎯", label:"Assessment" },
+      { id:"ev-r", icon:"📊", label:"My Results" },
+    ]
+  },
+  ops: {
+    label: "Editorial Operations",
+    subtitle: "Pinnacle Cohort Dashboard",
+    accent: "#67E8F9",
+    nav: [
+      { id:"op-pipeline",  icon:"👥", label:"Client Pipeline" },
+      { id:"op-capacity",  icon:"📋", label:"Editor Capacity" },
+      { id:"op-citations", icon:"📊", label:"Opportunities" },
+      { id:"op-alerts",    icon:"🚨", label:"Risk Alerts" },
+    ]
+  }
+};
+
+// ── ENTER ROLE ───────────────────────────────────────────────────────────────
+function enterRole(role) {
+  currentRole = role;
+  document.getElementById('role-screen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'block';
+  app.className = 'theme-' + role;
+
+  const R = ROLES[role];
+  document.getElementById('role-indicator').textContent = R.label;
+  document.getElementById('role-subtitle').textContent = R.subtitle;
+
+  // Build sidenav
+  const sn = document.getElementById('sidenav');
+  sn.innerHTML = '<div class="snav-section">Navigation</div>' +
+    R.nav.map(n=>`<button class="snav-item" id="snav-${n.id}" onclick="showView('${n.id}')"><span class="snav-icon">${n.icon}</span>${n.label}</button>`).join('');
+
+  var es=document.getElementById('eval-shell'),ma=document.getElementById('main-area');
+  if(role==='eval'){if(es)es.style.display='block';if(ma)ma.style.display='none';}
+  else{if(es)es.style.display='none';if(ma)ma.style.display='block';buildViews(role);}
+  showView(R.nav[0].id);
+}
+
+function switchRole() {
+  document.getElementById('role-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showView(id){
+  currentView=id;
+  document.querySelectorAll('.snav-item').forEach(i=>i.classList.remove('active'));
+  var isEval=id==='ev-q'||id==='ev-r';
+  var es=document.getElementById('eval-shell'),ma=document.getElementById('main-area');
+  if(isEval){
+    if(es)es.style.display='block';
+    if(ma)ma.style.display='none';
+    var vq=document.getElementById('ev-q-view'),vr=document.getElementById('ev-r-view');
+    if(vq)vq.style.display=id==='ev-q'?'block':'none';
+    if(vr)vr.style.display=id==='ev-r'?'block':'none';
+  } else {
+    if(es)es.style.display='none';
+    if(ma)ma.style.display='block';
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    var vw=document.getElementById('view-'+id);
+    if(vw)vw.classList.add('active');
+  }
+  var sn=document.getElementById('snav-'+id);
+  if(sn)sn.classList.add('active');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  const accent = {client:'#5B2D8E',attorney:'#059669',sales:'#D97706',ops:'#0891B2'}[currentRole]||'#333';
+  t.style.background = accent;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ── BUILD ALL VIEWS ──────────────────────────────────────────────────────────
+function buildViews(role) {
+  if(role==='eval')return;
+  const area = document.getElementById('main-area');
+  area.innerHTML = '';
+  if (role==='client')   buildClientViews(area);
+  if (role==='attorney') buildAttorneyViews(area);
+  if (role==='sales')    buildSalesViews(area);
+  if (role==='ops')      buildOpsViews(area);
+}
+
+// ══════════════════════════════════════════════════════
+// CLIENT VIEWS
+// ══════════════════════════════════════════════════════
+function buildClientViews(area) {
+  // OVERVIEW
+  area.innerHTML += `<div class="view" id="view-cl-overview">
+    <div class="page-hdr page-hdr-row">
+      <div><h1>Welcome back, Arjun</h1><p>Pinnacle Growth · Month 14 of 18 · Phase 2 — Opportunity Building</p></div>
+      <button class="btn btn-primary" onclick="toast('Scheduling call with your editor...')">📞 Schedule Editor Call</button>
+    </div>
+    <div class="g4" style="margin-bottom:1.25rem;">
+      <div class="stat"><div class="stat-val" style="color:#A78BFA;">62</div><div class="stat-lbl">Readiness Score</div><div class="stat-delta" style="color:#6EE7B7;">↑ 32 pts since start</div></div>
+      <div class="stat"><div class="stat-val">3</div><div class="stat-lbl">Articles Published</div><div class="stat-delta" style="color:#6EE7B7;">↑ 1 this quarter</div></div>
+      <div class="stat"><div class="stat-val">5</div><div class="stat-lbl">Opportunities</div><div class="stat-delta" style="color:#6EE7B7;">↑ 2 this quarter</div></div>
+      <div class="stat"><div class="stat-val">4 mo</div><div class="stat-lbl">To Phase 3</div><div class="stat-delta" style="color:#FCD34D;">Acclaim layer next</div></div>
+    </div>
+    <div class="g2" style="margin-bottom:1.25rem;">
+      <div class="card">
+        <div class="card-title">Phase Progress</div>
+        <div style="margin-bottom:.85rem;">
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.3rem;"><span>Phase 1 — Foundation</span><span style="color:#6EE7B7;font-weight:600;">Complete ✓</span></div>
+          <div class="prog"><div class="prog-fill" style="width:100%;background:#6EE7B7;"></div></div>
+        </div>
+        <div style="margin-bottom:.85rem;">
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.3rem;"><span>Phase 2 — Opportunity Building</span><span style="color:#A78BFA;font-weight:600;">67% complete</span></div>
+          <div class="prog"><div class="prog-fill" style="width:67%;background:#A78BFA;"></div></div>
+        </div>
+        <div style="margin-bottom:.85rem;">
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.3rem;"><span>Phase 3 — Acclaim Layer</span><span style="opacity:.4;">Upcoming</span></div>
+          <div class="prog"><div class="prog-fill" style="width:0%;background:#059669;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.3rem;"><span>Phase 4 — Petition Assembly</span><span style="opacity:.4;">Upcoming</span></div>
+          <div class="prog"><div class="prog-fill" style="width:0%;background:#DC2626;"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Next Actions</div>
+        <div class="tl">
+          <div class="tl-item"><div class="tl-dot" style="background:#A78BFA;"></div><div class="tl-line"></div><div class="tl-body"><div class="tl-title">Article 3 — Peer review response due</div><div class="tl-sub">IEEE TPAMI revision — editor has draft ready</div><div class="tl-timing" style="color:#A78BFA;">This week</div></div></div>
+          <div class="tl-item"><div class="tl-dot" style="background:#FCD34D;"></div><div class="tl-line"></div><div class="tl-body"><div class="tl-title">Conference abstract — ICML 2026</div><div class="tl-sub">Editor drafting; needs your approval</div><div class="tl-timing" style="color:#FCD34D;">Due May 12</div></div></div>
+          <div class="tl-item"><div class="tl-dot" style="background:#059669;"></div><div class="tl-line"></div><div class="tl-body"><div class="tl-title">Award Nomination 2 — IEEE Fellow</div><div class="tl-sub">Support materials being prepared</div><div class="tl-timing" style="color:#059669;">Due June 1</div></div></div>
+          <div class="tl-item"><div class="tl-dot" style="background:#6B7280;"></div><div class="tl-body"><div class="tl-title">Phase 3 Milestone Call</div><div class="tl-sub">Strategy session with senior editor</div><div class="tl-timing">Month 18 (4 months away)</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Opportunities — Last 6 Months</div>
+      <div class="cit-bars" id="cl-cit-chart"></div>
+      <div style="display:flex;justify-content:space-between;font-size:.65rem;opacity:.4;margin-top:.3rem;"><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span></div>
+      <div style="font-size:.75rem;opacity:.5;margin-top:.5rem;">↑ Opportunities growing as predicted by Phase 2 model</div>
+    </div>
+  </div>`;
+
+  // ROADMAP
+  area.innerHTML += `<div class="view" id="view-cl-roadmap">
+    <div class="page-hdr"><h1>My 18-Month Roadmap</h1><p>Phase-gated delivery — each phase prerequisite for the next</p></div>
+    <div class="g2" style="gap:1.25rem;align-items:start;">
+      <div>
+        ${[
+          {ph:1,label:"Foundation Sprint",months:"Months 1–6",color:"#6EE7B7",done:true,items:["FOE document + research angle","Article 1 — Published (IEEE)","Article 2 — Published (ACM)","Google Scholar profile + baseline","Award nomination 1","Judging round 1 (×2)","Speaking opportunity 1","Rec letters batch 1 (4)"]},
+          {ph:2,label:"Opportunity Building Engine",months:"Months 7–12",color:"#A78BFA",done:false,active:true,items:["Article 3 — Under review (IEEE TPAMI)","Peer reviewer role — ACM Transactions ★","Conference abstracts ×2 ★","Opportunity seeding — active","Award nomination 2","Speaking opportunity 2","Press mention — TechCrunch ★"]},
+          {ph:3,label:"Acclaim Layer Build",months:"Months 13–18",color:"#FCD34D",done:false,items:["Articles 4–5","Editorial board nomination ★","Awards 3–4 (int'l)","Speaking 3 — keynote","Patent provisional ★","Rec letters batch 2 (4)"]},
+          {ph:4,label:"Petition Assembly",months:"Months 19–24",color:"#F87171",done:false,items:["Final opportunities report","USCIS dossier — category mapped ★","Attorney briefing document ★","Petition filing coordination"]}
+        ].map(p=>`
+          <div class="card" style="margin-bottom:.85rem;border-left:3px solid ${p.color};${p.active?'border-color:'+p.color+';background:rgba(167,139,250,.04);':''}">
+            <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;">
+              <span style="width:26px;height:26px;border-radius:50%;background:${p.color};color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.75rem;flex-shrink:0;">${p.ph}</span>
+              <div><div style="font-size:.9rem;font-weight:700;color:${p.color};">${p.label}</div><div style="font-size:.72rem;opacity:.5;">${p.months}</div></div>
+              ${p.done?'<span class="bdg" style="background:rgba(110,231,183,.15);color:#6EE7B7;margin-left:auto;">Complete</span>':''}
+              ${p.active?'<span class="bdg" style="background:rgba(167,139,250,.2);color:#A78BFA;margin-left:auto;">In Progress</span>':''}
+            </div>
+            ${p.items.map(it=>`<div style="font-size:.78rem;padding:.18rem 0;opacity:${p.done?.7:p.active?1:.4};color:${it.includes('★')?(p.active?'#A78BFA':'#8B5CF6'):'inherit'};">${it.includes('★')?'★':'•'} ${it}</div>`).join('')}
+          </div>`).join('')}
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-title">Projected Score at Filing</div>
+          <div style="text-align:center;padding:1rem 0;">
+            <div style="font-size:.75rem;opacity:.4;margin-bottom:.3rem;">Current</div>
+            <div style="font-size:2.5rem;font-weight:800;color:#A78BFA;">62</div>
+            <div style="font-size:1.2rem;opacity:.3;margin:.5rem 0;">↓</div>
+            <div style="font-size:.75rem;opacity:.4;margin-bottom:.3rem;">Projected at Month 18</div>
+            <div style="font-size:2.5rem;font-weight:800;color:#6EE7B7;">87</div>
+          </div>
+          <div class="prog"><div class="prog-fill" style="width:62%;background:linear-gradient(90deg,#A78BFA,#6EE7B7);"></div></div>
+          <div style="font-size:.72rem;opacity:.4;margin-top:.4rem;text-align:center;">62 → 87 projected | Petition threshold: 80+</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Switching Cost Calculator</div>
+          <div style="font-size:.82rem;opacity:.7;margin-bottom:.75rem;">If you left Pinnacle today, here is what you would forfeit:</div>
+          ${[
+            ["Editorial context built","4 months","Cannot transfer"],
+            ["Opportunity momentum","5 opportunities","Reset to 0"],
+            ["Peer reviewer credits","2 verified","Lost"],
+            ["Recommender pipeline","4 coached","Restart"],
+            ["Phase 2 investment","$16K spent","Written off"],
+          ].map((r,i)=>`<div style="display:flex;gap:.75rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.78rem;">
+            <span style="flex:1.5;">${r[0]}</span>
+            <span style="color:#A78BFA;font-weight:600;">${r[1]}</span>
+            <span style="color:#F87171;font-size:.72rem;">${r[2]}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // CITATIONS
+  area.innerHTML += `<div class="view" id="view-cl-citations">
+    <div class="page-hdr"><h1>Opportunities</h1><p>Active submission opportunities across all targeted journals</p></div>
+    <div class="g3" style="margin-bottom:1.25rem;">
+      <div class="stat"><div class="stat-val" style="color:#A78BFA;">5</div><div class="stat-lbl">Opportunities</div><div class="stat-delta" style="color:#6EE7B7;">↑ 2 this quarter</div></div>
+      <div class="stat"><div class="stat-val">+8/mo</div><div class="stat-lbl">Current Velocity</div><div class="stat-delta" style="color:#6EE7B7;">↑ Accelerating</div></div>
+      <div class="stat"><div class="stat-val">40+</div><div class="stat-lbl">Projected at Month 18</div><div class="stat-delta" style="color:#A78BFA;">Strong petition position</div></div>
+    </div>
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-title">Opportunity History by Paper</div>
+      <table class="tbl">
+        <thead><tr><th>Paper</th><th>Journal</th><th>Published</th><th>Opportunities</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600;">Transformer Architectures for Low-Latency Inference</td><td><span class="bdg" style="background:rgba(167,139,250,.15);color:#A78BFA;">IEEE TPAMI</span></td><td style="opacity:.5;">Month 4</td><td style="font-weight:800;color:#A78BFA;">14</td><td style="color:#6EE7B7;font-weight:600;">+5/mo ↑</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Strong</span></td></tr>
+          <tr><td style="font-weight:600;">Federated Learning Under Non-IID Distributions</td><td><span class="bdg" style="background:rgba(167,139,250,.15);color:#A78BFA;">NeurIPS</span></td><td style="opacity:.5;">Month 6</td><td style="font-weight:800;color:#A78BFA;">7</td><td style="color:#6EE7B7;font-weight:600;">+3/mo ↑</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Building</span></td></tr>
+          <tr><td style="font-weight:600;">Privacy-Preserving Inference via Differential Privacy</td><td><span class="bdg" style="background:rgba(217,119,6,.15);color:#FCD34D;">Under Review</span></td><td style="opacity:.5;">Month 9 (sub.)</td><td style="font-weight:800;color:#6B7280;">2</td><td style="color:#FCD34D;font-weight:600;">+0/mo</td><td><span class="bdg" style="background:rgba(217,119,6,.1);color:#FCD34D;">Pending</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert" style="background:rgba(167,139,250,.08);border-color:#A78BFA;color:#C4B5FD;">
+      🔔 <strong>New opportunity identified</strong> — IEEE Transactions on Neural Networks open call matches your profile. Submission window: 30 days.
+    </div>
+  </div>`;
+
+  // ARTICLES
+  area.innerHTML += `<div class="view" id="view-cl-articles">
+    <div class="page-hdr"><h1>Publications</h1><p>All manuscripts across draft, review, and published stages</p></div>
+    <div class="g3" style="margin-bottom:1.25rem;">
+      <div class="stat"><div class="stat-val" style="color:#6EE7B7;">2</div><div class="stat-lbl">Published</div></div>
+      <div class="stat"><div class="stat-val" style="color:#FCD34D;">1</div><div class="stat-lbl">Under Review</div></div>
+      <div class="stat"><div class="stat-val" style="color:#A78BFA;">3</div><div class="stat-lbl">Target (Growth plan)</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Manuscript Pipeline</div>
+      <table class="tbl">
+        <thead><tr><th>Title</th><th>Venue</th><th>Stage</th><th>Editor</th><th>Opportunities</th><th>Next Step</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600;max-width:240px;">Transformer Architectures for Low-Latency Inference at Scale</td><td>IEEE TPAMI</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Published</span></td><td style="opacity:.5;">Priya S.</td><td style="font-weight:700;color:#A78BFA;">3</td><td style="opacity:.5;">Target venues</td></tr>
+          <tr><td style="font-weight:600;max-width:240px;">Federated Learning Under Non-IID Data Distributions</td><td>NeurIPS 2025</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Published</span></td><td style="opacity:.5;">Priya S.</td><td style="font-weight:700;color:#A78BFA;">2</td><td style="opacity:.5;">Target venues</td></tr>
+          <tr><td style="font-weight:600;max-width:240px;">Privacy-Preserving Inference via Differential Privacy</td><td>IEEE TPAMI</td><td><span class="bdg" style="background:rgba(217,119,6,.1);color:#FCD34D;">Revision Due</span></td><td style="opacity:.5;">Priya S.</td><td style="color:#6B7280;">2</td><td><button class="btn btn-primary" style="font-size:.72rem;padding:.3rem .7rem;" onclick="toast('Opening revision draft...')">Review Draft</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+  // ACCLAIM
+  area.innerHTML += `<div class="view" id="view-cl-acclaim">
+    <div class="page-hdr"><h1>Acclaim & Evidence</h1><p>Non-publication EB1A evidence categories</p></div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">Evidence Category Progress</div>
+        ${[
+          {icon:"🏆",label:"Awards",count:"1 / 3–4",pct:28,color:"#FCD34D"},
+          {icon:"🎤",label:"Speaking",count:"1 / 3–4",pct:28,color:"#A78BFA"},
+          {icon:"⚖️",label:"Judging / Reviewing",count:"2 / 6–8",pct:32,color:"#6EE7B7"},
+          {icon:"✉️",label:"Rec Letters",count:"4 / 7–9",pct:50,color:"#67E8F9"},
+          {icon:"🔍",label:"Peer Reviewer Role ★",count:"1 / 1–2",pct:60,color:"#A78BFA"},
+          {icon:"📋",label:"Editorial Board ★",count:"0 / 1",pct:0,color:"#F87171"},
+          {icon:"📰",label:"Press Mentions ★",count:"0 / 1–2",pct:0,color:"#F87171"},
+          {icon:"💡",label:"Patent ★",count:"0 / 1",pct:0,color:"#F87171"},
+        ].map(e=>`<div class="ev-row">
+          <span class="ev-icon">${e.icon}</span>
+          <span class="ev-label">${e.label}</span>
+          <span class="ev-count" style="color:${e.pct>40?'#6EE7B7':e.pct>0?'#FCD34D':'#F87171'};font-size:.75rem;">${e.count}</span>
+          <div class="ev-bar-wrap"><div class="prog"><div class="prog-fill" style="width:${e.pct}%;background:${e.color};"></div></div></div>
+        </div>`).join('')}
+      </div>
+      <div>
+        <div class="alert" style="background:rgba(248,113,113,.08);border-color:#F87171;color:#FCA5A5;margin-bottom:.75rem;">
+          ⚠️ <strong>Action needed:</strong> Editorial Board and Press Mention are both at 0. Phase 3 activates these. Your milestone call is in 4 months.
+        </div>
+        <div class="card">
+          <div class="card-title">Upcoming Acclaim Milestones</div>
+          <div class="tl">
+            <div class="tl-item"><div class="tl-dot" style="background:#FCD34D;"></div><div class="tl-line"></div><div class="tl-body"><div class="tl-title">IEEE Fellow nomination submission</div><div class="tl-sub">Editor completing support package</div><div class="tl-timing" style="color:#FCD34D;">Month 15</div></div></div>
+            <div class="tl-item"><div class="tl-dot" style="background:#A78BFA;"></div><div class="tl-line"></div><div class="tl-body"><div class="tl-title">Editorial Board — ACM TOCS</div><div class="tl-sub">Phase 3 activation · outreach begins</div><div class="tl-timing" style="color:#A78BFA;">Month 13</div></div></div>
+            <div class="tl-item"><div class="tl-dot" style="background:#6EE7B7;"></div><div class="tl-body"><div class="tl-title">Speaking — KDD 2026 keynote proposal</div><div class="tl-sub">Target: invited talk status</div><div class="tl-timing" style="color:#6EE7B7;">Month 14–16</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // PETITION
+  area.innerHTML += `<div class="view" id="view-cl-petition">
+    <div class="page-hdr"><h1>Petition Readiness</h1><p>Your current filing readiness score and projected state at Month 18</p></div>
+    <div class="g2">
+      <div class="card" style="text-align:center;padding:2rem;">
+        <div style="font-size:.75rem;opacity:.4;margin-bottom:.5rem;">CURRENT READINESS</div>
+        <div style="font-size:4.5rem;font-weight:900;color:#A78BFA;line-height:1;">62</div>
+        <div style="font-size:.85rem;opacity:.5;margin:.5rem 0 1rem;">/ 100</div>
+        <div class="prog" style="margin:0 auto;max-width:200px;"><div class="prog-fill" style="width:62%;background:linear-gradient(90deg,#A78BFA,#6EE7B7);"></div></div>
+        <div style="margin-top:1.25rem;font-size:.78rem;opacity:.5;">Petition threshold: <strong style="color:#6EE7B7;opacity:1;">80+</strong></div>
+        <div style="margin-top:.5rem;font-size:.78rem;color:#A78BFA;">18 points needed · 4 months of Phase 3 ahead</div>
+      </div>
+      <div class="card" style="text-align:center;padding:2rem;">
+        <div style="font-size:.75rem;opacity:.4;margin-bottom:.5rem;">PROJECTED AT MONTH 18</div>
+        <div style="font-size:4.5rem;font-weight:900;color:#6EE7B7;line-height:1;">87</div>
+        <div style="font-size:.85rem;opacity:.5;margin:.5rem 0 1rem;">/ 100</div>
+        <div class="prog" style="margin:0 auto;max-width:200px;"><div class="prog-fill" style="width:87%;background:#6EE7B7;"></div></div>
+        <div style="margin-top:1.25rem;font-size:.78rem;color:#6EE7B7;font-weight:600;">✓ Above petition threshold</div>
+        <div style="margin-top:.5rem;font-size:.78rem;opacity:.5;">Based on Phase 3 completion + opportunity compounding</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Render opportunities chart
+  setTimeout(()=>{
+    const el = document.getElementById('cl-cit-chart');
+    if(!el) return;
+    const vals=[2,3,3,4,5,8], colors=['#5B2D8E','#5B2D8E','#6D35A8','#7C3AED','#8B5CF6','#A78BFA'];
+    el.innerHTML = vals.map((v,i)=>`<div class="bar-col"><div class="bar-num" style="color:#A78BFA;">${v}</div><div class="bar-seg" style="height:${v*10}px;background:${colors[i]};"></div></div>`).join('');
+  },100);
+}
+
+// ══════════════════════════════════════════════════════
+// ATTORNEY VIEWS
+// ══════════════════════════════════════════════════════
+function buildAttorneyViews(area) {
+  area.innerHTML += `<div class="view" id="view-at-summary">
+    <div class="page-hdr page-hdr-row"><div><h1>Case Summary</h1><p>Arjun Mehta — Pinnacle Growth · Month 14 of 18 · USCIS EB1A Petition</p></div><button class="btn btn-primary" onclick="toast('Downloading complete dossier PDF...')">⬇ Download Dossier</button></div>
+    <div class="g4" style="margin-bottom:1.25rem;">
+      <div class="stat"><div class="stat-val" style="color:#6EE7B7;">62</div><div class="stat-lbl">Readiness Score</div><div class="stat-delta" style="color:#6EE7B7;">↑ Petition threshold: 80</div></div>
+      <div class="stat"><div class="stat-val">3</div><div class="stat-lbl">Published Articles</div><div class="stat-delta" style="color:#6EE7B7;">All indexed journals</div></div>
+      <div class="stat"><div class="stat-val">5</div><div class="stat-lbl">Total Opportunities</div><div class="stat-delta" style="color:#6EE7B7;">↑ 2 this quarter</div></div>
+      <div class="stat"><div class="stat-val">87</div><div class="stat-lbl">Projected Score at Filing</div><div class="stat-delta" style="color:#6EE7B7;">Month 18</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">USCIS Evidence Categories Covered</div>
+        ${[
+          {cat:"Published Articles of Major Significance",status:"Strong",detail:"3 published · 5 opportunities · 1 IEEE TPAMI"},
+          {cat:"Judging Others' Work",status:"Good","detail":"2 verified peer reviewer credits"},
+          {cat:"Original Contributions of Major Significance",status:"Building","detail":"Patent provisional filed; linked to publications"},
+          {cat:"Scholarly Articles in Professional Publications",status:"Strong","detail":"3 articles; all in USCIS-recognized indexed journals"},
+          {cat:"Display of Work at Artistic Exhibitions",status:"N/A","detail":"Not applicable — STEM petition"},
+          {cat:"Leading or Critical Role",status:"Building","detail":"Editorial board nomination pending"},
+          {cat:"High Salary or Remuneration",status:"Pending","detail":"To be confirmed by attorney via pay stubs"},
+          {cat:"Commercial Success",status:"N/A","detail":"Not applicable"},
+        ].map((r,i)=>`<div style="display:flex;align-items:flex-start;gap:.75rem;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.05);">
+          <span style="font-size:.78rem;flex:1.5;">${r.cat}</span>
+          <span class="bdg" style="background:${{Strong:'rgba(110,231,183,.1)',Good:'rgba(110,231,183,.08)',Building:'rgba(217,119,6,.1)',Pending:'rgba(107,114,128,.1)','N/A':'rgba(107,114,128,.05)'}[r.status]};color:${{Strong:'#6EE7B7',Good:'#6EE7B7',Building:'#FCD34D',Pending:'#9CA3AF','N/A':'#4B5563'}[r.status]};">${r.status}</span>
+          <span style="font-size:.72rem;opacity:.4;flex:1.5;text-align:right;">${r.detail}</span>
+        </div>`).join('')}
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-title">Opportunity State at Petition</div>
+          <div style="display:flex;gap:1rem;margin-top:.5rem;">
+            <div style="flex:1;text-align:center;padding:.75rem;background:rgba(110,231,183,.06);border-radius:8px;border:1px solid rgba(110,231,183,.2);">
+              <div style="font-size:1.8rem;font-weight:800;color:#6EE7B7;">40+</div>
+              <div style="font-size:.72rem;opacity:.5;margin-top:.2rem;">Projected opportunities<br>at Month 18 filing</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:.75rem;background:rgba(248,113,113,.06);border-radius:8px;border:1px solid rgba(248,113,113,.2);">
+              <div style="font-size:1.8rem;font-weight:800;color:#F87171;">0</div>
+              <div style="font-size:.72rem;opacity:.5;margin-top:.2rem;">Opportunities if filed<br>on Luminary (Month 9)</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Attorney Notes</div>
+          <div style="font-size:.82rem;opacity:.7;line-height:1.6;">The Pinnacle dossier provides a structured, USCIS category-mapped evidence package. Each document is tagged to the relevant extraordinary ability criterion with a brief rationale. The opportunity pipeline report demonstrates sustained recognition, not a single spike. Recommend filing no earlier than Month 18 to ensure opportunity pipeline is maximally strong.</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  area.innerHTML += `<div class="view" id="view-at-evidence">
+    <div class="page-hdr"><h1>Evidence Dossier</h1><p>USCIS category-mapped · indexed · attorney-ready</p></div>
+    <div class="card">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>Document</th><th>USCIS Category</th><th>Format</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr class="tbl-section"><td colspan="5">Published Articles</td></tr>
+          <tr><td style="opacity:.4;">1</td><td>Transformer Architectures — IEEE TPAMI</td><td style="opacity:.5;">Scholarly Articles</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">PDF + opportunity report</span></td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Ready</span></td></tr>
+          <tr><td style="opacity:.4;">2</td><td>Federated Learning — NeurIPS 2025</td><td style="opacity:.5;">Scholarly Articles</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">PDF + opportunity report</span></td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Ready</span></td></tr>
+          <tr><td style="opacity:.4;">3</td><td>Privacy-Preserving Inference (under review)</td><td style="opacity:.5;">Scholarly Articles</td><td><span class="bdg" style="background:rgba(217,119,6,.1);color:#FCD34D;">Submission confirmation</span></td><td><span class="bdg" style="background:rgba(217,119,6,.1);color:#FCD34D;">In Review</span></td></tr>
+          <tr class="tbl-section"><td colspan="5">Judging & Peer Review</td></tr>
+          <tr><td style="opacity:.4;">4</td><td>ACM Transactions peer reviewer confirmation</td><td style="opacity:.5;">Judging Others' Work</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Official letter</span></td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Ready</span></td></tr>
+          <tr><td style="opacity:.4;">5</td><td>IEEE TPAMI conference review record (×2)</td><td style="opacity:.5;">Judging Others' Work</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Activity log + letter</span></td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Ready</span></td></tr>
+          <tr class="tbl-section"><td colspan="5">Awards & Recognition</td></tr>
+          <tr><td style="opacity:.4;">6</td><td>Best Paper Award — ICML 2025</td><td style="opacity:.5;">Awards / Prizes</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Certificate + program</span></td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Ready</span></td></tr>
+          <tr class="tbl-section"><td colspan="5">Recommendation Letters</td></tr>
+          <tr><td style="opacity:.4;">7–10</td><td>4 recommendation letters (drafts ready)</td><td style="opacity:.5;">Expert Opinion</td><td><span class="bdg" style="background:rgba(217,119,6,.1);color:#FCD34D;">In preparation</span></td><td><span class="bdg" style="background:rgba(217,119,6,.1);color:#FCD34D;">Month 16–17</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+  area.innerHTML += `<div class="view" id="view-at-citations">
+    <div class="page-hdr"><h1>Opportunities</h1><p>Verified opportunities — all sources independently confirmed</p></div>
+    <div class="g3" style="margin-bottom:1.25rem;">
+      <div class="stat"><div class="stat-val" style="color:#6EE7B7;">5</div><div class="stat-lbl">Opportunities</div></div>
+      <div class="stat"><div class="stat-val">+8/mo</div><div class="stat-lbl">Current Velocity</div></div>
+      <div class="stat"><div class="stat-val">40+</div><div class="stat-lbl">Projected at Filing (Mo 18)</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Opportunity Sources (Sample)</div>
+      <table class="tbl">
+        <thead><tr><th>Citing Paper</th><th>Venue</th><th>Cites</th><th>Verified</th></tr></thead>
+        <tbody>
+          <tr><td>Efficient Attention Mechanisms for Real-Time ML</td><td>NeurIPS 2025</td><td style="color:#6EE7B7;font-weight:700;">Transformer Architectures</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Semantic Scholar ✓</span></td></tr>
+          <tr><td>Scalable Distributed Training for Vision Models</td><td>ICML 2025</td><td style="color:#6EE7B7;font-weight:700;">Transformer Architectures</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">Google Scholar ✓</span></td></tr>
+          <tr><td>Privacy-Aware Federated Systems at Scale</td><td>IEEE S&P 2026</td><td style="color:#6EE7B7;font-weight:700;">Federated Learning</td><td><span class="bdg" style="background:rgba(110,231,183,.1);color:#6EE7B7;">CrossRef ✓</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+  area.innerHTML += `<div class="view" id="view-at-brief">
+    <div class="page-hdr page-hdr-row"><div><h1>Attorney Briefing Document</h1><p>Petition narrative, contribution framing, and recommended legal strategy</p></div><button class="btn btn-primary" onclick="toast('Downloading attorney brief...')">⬇ Download Brief</button></div>
+    <div class="card">
+      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.4;margin-bottom:.75rem;">Recommended Filing Strategy</div>
+      ${[
+        {title:"Primary Evidence Category",content:"Scholarly Articles in Professional Publications — 3 published articles in top-tier indexed venues (IEEE TPAMI × 2, NeurIPS). 5 active submission opportunities identified. This is the anchor criterion."},
+        {title:"Secondary Category",content:"Judging Others' Work — 2 verified peer reviewer credits in Transactions-level journals. Supported by official confirmation letters from editors."},
+        {title:"Tertiary Category",content:"Original Contributions of Major Significance — patent provisional filed and linked to published research. Demonstrates independent innovation beyond employment scope."},
+        {title:"Known Weakness",content:"High Salary criterion is unconfirmed. Attorney should request pay stubs and compare to OES wage data for the relevant SOC code. If salary is in top 10%, this adds a fourth criterion."},
+        {title:"RFE Risk Assessment",content:"Low. Opportunity count at filing will be 40+, pipeline is accelerating, journals are indexed and non-predatory (Beall's List + DOAJ verified). Peer reviewer role adds corroborating expert status evidence. The only risk is the awards category — currently 1 award; 2 is stronger."},
+      ].map(s=>`<div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.07);">
+        <div style="font-size:.85rem;font-weight:700;color:#6EE7B7;margin-bottom:.3rem;">${s.title}</div>
+        <div style="font-size:.82rem;opacity:.7;line-height:1.6;">${s.content}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+
+  area.innerHTML += `<div class="view" id="view-at-readiness">
+    <div class="page-hdr"><h1>Petition Readiness Score</h1><p>Current vs projected at Month 18 filing</p></div>
+    <div class="g2">
+      <div class="card" style="text-align:center;padding:2.5rem;">
+        <div style="font-size:.72rem;opacity:.4;margin-bottom:.75rem;letter-spacing:.06em;text-transform:uppercase;">Readiness Now (Month 14)</div>
+        <div style="font-size:5rem;font-weight:900;color:#FCD34D;line-height:1;">62</div>
+        <div style="font-size:.9rem;opacity:.4;margin:.4rem 0 1rem;">/100 · Below filing threshold</div>
+        <div class="prog"><div class="prog-fill" style="width:62%;background:#FCD34D;"></div></div>
+        <div style="font-size:.75rem;color:#F87171;margin-top:.75rem;">18 points needed before attorney filing</div>
+      </div>
+      <div class="card" style="text-align:center;padding:2.5rem;">
+        <div style="font-size:.72rem;opacity:.4;margin-bottom:.75rem;letter-spacing:.06em;text-transform:uppercase;">Projected at Month 18</div>
+        <div style="font-size:5rem;font-weight:900;color:#6EE7B7;line-height:1;">87</div>
+        <div style="font-size:.9rem;opacity:.4;margin:.4rem 0 1rem;">/100 · Above filing threshold</div>
+        <div class="prog"><div class="prog-fill" style="width:87%;background:#6EE7B7;"></div></div>
+        <div style="font-size:.75rem;color:#6EE7B7;margin-top:.75rem;">✓ Recommend filing at Month 18–20</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// SALES VIEWS
+// ══════════════════════════════════════════════════════
+function buildSalesViews(area) {
+  area.innerHTML += `<div class="view" id="view-sl-compare">
+    <div class="page-hdr"><h1>Live Plan Comparison</h1><p>Use during client consultation to show exactly why Pinnacle exists</p></div>
+    <div style="overflow-x:auto;">
+      <table class="tbl" style="min-width:700px;">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th style="color:#6EE7B7;">Navigator</th>
+            <th style="color:#6EE7B7;">Elite</th>
+            <th style="color:#FCD34D;">Luminary</th>
+            <th style="color:#A78BFA;background:rgba(167,139,250,.06);">★ Pinnacle</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${[
+            ["Target Cohort","2–5 yr","2–5 yr","5–7 yr","7+ yr ONLY"],
+            ["Duration","6 mo","6 mo","9 mo","18–24 mo"],
+            ["Price","$19,999","$24,999","$34,999","$44,982–$55,176"],
+            ["Monthly Rate","~$3.3K","~$4.2K","~$3.9K","$2,299–$2,499"],
+            ["Scholarly Articles","4","4","6 (1–2 IEEE)","6–8 (2–3 IEEE/Q1)"],
+            ["Opportunities at Filing","0","0","0","20–40+"],
+            ["Opportunity Tracking","—","—","—","★ Monthly updates"],
+            ["Peer Reviewer Role","—","—","—","★ 1–2 verified"],
+            ["Editorial Board","—","—","—","★ 1 seat outreach"],
+            ["Conference Abstracts","—","—","—","★ 2–3 indexed"],
+            ["Press Mentions","—","—","—","★ 1–2 features"],
+            ["Petition Dossier","Guide only","Guide only","Guide only","★ USCIS-mapped"],
+            ["Attorney Brief","—","—","—","★ Full narrative"],
+            ["Refund Assurance","—","50%","80%","80%"],
+            ["Refiling Support","50%","50%","100%","100%"],
+          ].map((r,i)=>`<tr>
+            <td style="font-weight:${i<4?700:400};opacity:${i<4?1:.85};">${r[0]}</td>
+            <td style="color:#6B7280;">${r[1]}</td>
+            <td style="color:#6B7280;">${r[2]}</td>
+            <td style="color:#9CA3AF;">${r[3]}</td>
+            <td style="color:${r[4].includes('★')?'#C4B5FD':'#E9D5FF'};font-weight:${r[4].includes('★')?700:400};background:rgba(167,139,250,.04);">${r[4]}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="alert" style="margin-top:1rem;background:rgba(167,139,250,.08);border-color:#A78BFA;color:#C4B5FD;">
+      💡 <strong>Sales tip:</strong> The monthly rate on Pinnacle ($2,499) is <em>lower</em> than Luminary's implied rate ($3,889/mo). Lead with that. Then show the opportunity pipeline difference.
+    </div>
+  </div>`;
+
+  area.innerHTML += `<div class="view" id="view-sl-simulator">
+    <div class="page-hdr"><h1>Opportunities Simulator</h1><p>Show the client what their petition looks like on each plan</p></div>
+    <div class="g2" style="margin-bottom:1.25rem;">
+      <div class="card" style="border:1.5px solid rgba(248,113,113,.3);">
+        <div class="card-title" style="color:#F87171;">Luminary Track — Filed Month 9</div>
+        <div class="cit-bars" id="sim-lum-chart"></div>
+        <div style="display:flex;justify-content:space-between;font-size:.62rem;opacity:.4;margin-top:.25rem;"><span>Mo 1</span><span>Mo 3</span><span>Mo 5</span><span>Mo 7</span><span>Mo 9</span><span>FILED</span></div>
+        <div style="margin-top:1rem;display:flex;gap:1rem;">
+          <div style="text-align:center;flex:1;padding:.75rem;background:rgba(248,113,113,.08);border-radius:8px;"><div style="font-size:2rem;font-weight:800;color:#F87171;">0</div><div style="font-size:.72rem;opacity:.5;">Opportunities at filing</div></div>
+          <div style="text-align:center;flex:1;padding:.75rem;background:rgba(248,113,113,.08);border-radius:8px;"><div style="font-size:2rem;font-weight:800;color:#F87171;">High</div><div style="font-size:.72rem;opacity:.5;">RFE risk</div></div>
+        </div>
+      </div>
+      <div class="card" style="border:1.5px solid rgba(110,231,183,.3);">
+        <div class="card-title" style="color:#6EE7B7;">Pinnacle Track — Filed Month 18</div>
+        <div class="cit-bars" id="sim-pin-chart"></div>
+        <div style="display:flex;justify-content:space-between;font-size:.62rem;opacity:.4;margin-top:.25rem;"><span>Mo 1</span><span>Mo 4</span><span>Mo 8</span><span>Mo 12</span><span>Mo 16</span><span>FILED</span></div>
+        <div style="margin-top:1rem;display:flex;gap:1rem;">
+          <div style="text-align:center;flex:1;padding:.75rem;background:rgba(110,231,183,.08);border-radius:8px;"><div style="font-size:2rem;font-weight:800;color:#6EE7B7;">40+</div><div style="font-size:.72rem;opacity:.5;">Opportunities at filing</div></div>
+          <div style="text-align:center;flex:1;padding:.75rem;background:rgba(110,231,183,.08);border-radius:8px;"><div style="font-size:2rem;font-weight:800;color:#6EE7B7;">Low</div><div style="font-size:.72rem;opacity:.5;">RFE risk</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Key Talking Points for This Slide</div>
+      ${["USCIS evaluates sustained recognition — a paper with zero citations is evidence of publication, not impact.","The 18-month Pinnacle arc gives articles time to compound before the petition is filed. Luminary does not.","Every month of citation velocity strengthens the 'sustained national / international acclaim' standard.","A Pinnacle client files with a citation velocity graph that shows acceleration, not a flat zero line."].map(p=>`<div style="display:flex;gap:.75rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem;"><span style="color:#FCD34D;flex-shrink:0;">→</span><span style="opacity:.8;">${p}</span></div>`).join('')}
+    </div>
+  </div>`;
+
+  area.innerHTML += `<div class="view" id="view-sl-routing">
+    <div class="page-hdr"><h1>Client Routing Tool</h1><p>Click the scenario that best matches your prospect. Get the instant recommendation.</p></div>
+    <div class="g2" style="align-items:start;">
+      <div id="sales-routes"></div>
+      <div class="card" id="sales-route-detail" style="display:none;">
+        <div class="card-title">Recommendation</div>
+        <div id="srd-plan" style="font-size:1.4rem;font-weight:800;color:#FCD34D;margin-bottom:.3rem;"></div>
+        <div id="srd-price" style="font-size:1rem;font-weight:700;color:#A78BFA;margin-bottom:.75rem;"></div>
+        <div id="srd-rationale" style="font-size:.82rem;opacity:.75;line-height:1.6;margin-bottom:1rem;"></div>
+        <button class="btn btn-primary" onclick="toast('Generating proposal...')">Generate Proposal →</button>
+      </div>
+      <div class="card" id="sales-route-ph" style="display:flex;align-items:center;justify-content:center;min-height:180px;color:#6B7280;font-size:.85rem;">← Click a scenario</div>
+    </div>
+  </div>`;
+
+  area.innerHTML += `<div class="view" id="view-sl-pricing">
+    <div class="page-hdr"><h1>Pricing & ROI</h1><p>Show the client the economics of their investment</p></div>
+    <div class="g2" style="margin-bottom:1.25rem;">
+      ${[
+        {name:"Pinnacle Growth",mo:"$2,499",dur:"18 months",total:"$44,982",margin:"~51%",ltvcac:"~19×",color:"#A78BFA"},
+        {name:"Pinnacle Premier",mo:"$2,299",dur:"24 months",total:"$55,176",margin:"~52%",ltvcac:"~24×",color:"#7C3AED"},
+      ].map(t=>`<div class="card" style="border:1.5px solid rgba(167,139,250,.3);">
+        <div style="font-size:1rem;font-weight:800;color:${t.color};margin-bottom:.3rem;">${t.name}</div>
+        <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.1rem;">${t.mo}<span style="font-size:.9rem;opacity:.4;font-weight:400;">/mo</span></div>
+        <div style="font-size:.8rem;opacity:.5;margin-bottom:1rem;">${t.dur} · Total: <strong style="color:${t.color};opacity:1;">${t.total}</strong></div>
+        ${[["Monthly rate vs Luminary","$3,889/mo","Lower ✓"],["Total LTV to EB1A Experts",t.total,"vs $35K Luminary"],["Gross margin",t.margin,"After delivery costs"],["LTV : CAC",t.ltvcac,"Industry avg: 3–5×"]].map(r=>`<div style="display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.78rem;">
+          <span style="opacity:.6;">${r[0]}</span>
+          <span style="opacity:.4;text-decoration:line-through;font-size:.7rem;">${r[1]}</span>
+          <span style="color:${t.color};font-weight:700;">${r[2]}</span>
+        </div>`).join('')}
+      </div>`).join('')}
+    </div>
+    <div class="bar-chart" style="height:130px;margin-bottom:.5rem;" id="sl-rev-chart"></div>
+    <div style="display:flex;gap:1.5rem;font-size:.7rem;opacity:.5;justify-content:center;">
+      <span>■ <span style="color:#FCD34D;">Luminary equiv.</span></span>
+      <span>■ <span style="color:#A78BFA;">Pinnacle Growth</span></span>
+      <span>■ <span style="color:#7C3AED;">Pinnacle Premier</span></span>
+      <span>■ <span style="color:#5B2D8E;">200 clients scaled</span></span>
+    </div>
+  </div>`;
+
+  // Populate sales routes
+  setTimeout(()=>{
+    const routes=[
+      {sig:"2–3 yrs, no publications, no urgency",plan:"Navigator",price:"$19,999",rat:"Sprint model. 6 months is sufficient. Price sensitivity likely. Don't oversell."},
+      {sig:"2–4 yrs, wants refund assurance",plan:"Elite",price:"$24,999",rat:"Identical delivery to Navigator. Elite is a risk-management upgrade — 50% refund safety net."},
+      {sig:"5–7 yrs, some publications, 12–18 mo to petition",plan:"Luminary",price:"$34,999",rat:"Existing profile has depth. 9 months sufficient if there are 1–2 prior publications. Opportunity pipeline is sufficient."},
+      {sig:"7+ yrs, zero publications, 18–24 mo to petition",plan:"Pinnacle Growth",price:"$2,499/mo × 18 = $44,982",rat:"Opportunity lag is the primary risk. Needs the full 18-month arc. Phase 1 articles by Month 6, opportunity compounding by Month 12."},
+      {sig:"7+ yrs, wants maximum quality, no timeline pressure",plan:"Pinnacle Premier",price:"$2,299/mo × 24 = $55,176",rat:"Maximum output: 8 articles (3 IEEE/Q1), all acclaim categories, full patent and press coverage. Strongest possible petition."},
+      {sig:"7+ yrs, 3+ papers, zero opportunities",plan:"Pinnacle (Growth or Premier)",price:"$44,982 – $55,176",rat:"Publication count is not the problem — opportunity pipeline is. Even with 3 papers, Pinnacle is correct. Opportunity identification, not drafting, is the Phase 1 priority."},
+    ];
+    const sr=document.getElementById('sales-routes');
+    if(!sr) return;
+    routes.forEach((r,i)=>{
+      const d=document.createElement('div');
+      d.className='route-item';
+      d.id='sr-'+i;
+      d.innerHTML=`<div class="route-signal">${r.sig}</div><div class="route-detail"><strong style="color:#FCD34D;">${r.plan}</strong><br><span style="opacity:.6;font-size:.75rem;">${r.price}</span><br><br>${r.rat}</div>`;
+      d.onclick=()=>{
+        document.querySelectorAll('.route-item').forEach(x=>x.classList.remove('active'));
+        d.classList.add('active');
+        document.getElementById('sales-route-ph').style.display='none';
+        document.getElementById('sales-route-detail').style.display='block';
+        document.getElementById('srd-plan').textContent='→ '+r.plan;
+        document.getElementById('srd-price').textContent=r.price;
+        document.getElementById('srd-rationale').textContent=r.rat;
+      };
+      sr.appendChild(d);
+    });
+
+    // Charts
+    const lc=document.getElementById('sim-lum-chart');
+    if(lc) lc.innerHTML=[0,0,1,1,2].map(v=>`<div class="bar-col"><div class="bar-num" style="color:#F87171;">${v}</div><div class="bar-seg" style="height:${Math.max(v*12,2)}px;background:#DC2626;opacity:.6;"></div></div>`).join('')+'<div class="bar-col"><div class="bar-num" style="color:#F87171;">0</div><div style="width:100%;height:2px;background:#DC2626;"></div></div>';
+    const pc2=document.getElementById('sim-pin-chart');
+    if(pc2) pc2.innerHTML=[0,1,3,8,18,38].map((v,i)=>`<div class="bar-col"><div class="bar-num" style="color:#6EE7B7;">${v}</div><div class="bar-seg" style="height:${Math.max(v*2.5,2)}px;background:${i===5?'#6EE7B7':'#059669'};opacity:${0.4+i*.12};"></div></div>`).join('');
+    const rv=document.getElementById('sl-rev-chart');
+    if(rv){const vals=[{v:35,c:'#D97706'},{v:45,c:'#A78BFA'},{v:55,c:'#7C3AED'},{v:88,c:'#5B2D8E'}],mx=90;rv.innerHTML=vals.map(x=>`<div class="bar-col"><div class="bar-num" style="color:${x.c};">$${x.v}K</div><div class="bar-seg" style="height:${x.v/mx*110}px;background:${x.c};"></div></div>`).join('');}
+  },100);
+}
+
+// ══════════════════════════════════════════════════════
+// OPS VIEWS
+// ══════════════════════════════════════════════════════
+function buildOpsViews(area) {
+  area.innerHTML += `<div class="view" id="view-op-pipeline">
+    <div class="page-hdr page-hdr-row"><div><h1>Client Pipeline</h1><p>All Pinnacle clients · Live phase status</p></div><button class="btn btn-primary" onclick="toast('Exporting pipeline report...')">⬇ Export</button></div>
+    <div class="g4" style="margin-bottom:1.25rem;">
+      <div class="stat"><div class="stat-val" style="color:#67E8F9;">6</div><div class="stat-lbl">Active Pinnacle Clients</div><div class="stat-delta" style="color:#6EE7B7;">+2 this month</div></div>
+      <div class="stat"><div class="stat-val">1</div><div class="stat-lbl">At Risk</div><div class="stat-delta" style="color:#F87171;">Intervention needed</div></div>
+      <div class="stat"><div class="stat-val">1</div><div class="stat-lbl">Petition Ready</div><div class="stat-delta" style="color:#6EE7B7;">Score 91 · Filing Month 23</div></div>
+      <div class="stat"><div class="stat-val">$13.5K</div><div class="stat-lbl">Monthly Recurring Revenue</div><div class="stat-delta" style="color:#6EE7B7;">↑ On track</div></div>
+    </div>
+    <div id="ops-client-list"></div>
+  </div>`;
+
+  area.innerHTML += `<div class="view" id="view-op-capacity">
+    <div class="page-hdr"><h1>Editor Capacity</h1><p>Workload distribution across editorial team</p></div>
+    <div class="g3" style="margin-bottom:1.25rem;">
+      ${[
+        {name:"Priya S.",clients:2,cap:20,used:14,articles:3,color:"#67E8F9"},
+        {name:"Raj M.",clients:2,cap:20,used:16,articles:2,color:"#A78BFA"},
+        {name:"Dev K.",clients:2,cap:20,used:15,articles:2,color:"#6EE7B7"},
+      ].map(e=>`<div class="card">
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;">
+          <div style="width:38px;height:38px;border-radius:50%;background:${e.color};color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;">${e.name[0]+e.name.split(' ')[1][0]}</div>
+          <div><div style="font-weight:700;">${e.name}</div><div style="font-size:.72rem;opacity:.5;">${e.clients} clients · ${e.articles} articles active</div></div>
+        </div>
+        <div style="font-size:.75rem;display:flex;justify-content:space-between;margin-bottom:.3rem;"><span>Hours this month</span><span style="color:${e.color};font-weight:700;">${e.used}/${e.cap} hrs</span></div>
+        <div class="prog"><div class="prog-fill" style="width:${e.used/e.cap*100}%;background:${e.color};"></div></div>
+      </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">Capacity Rules</div>
+      ${["Each senior editor handles maximum 8 Pinnacle clients. Current load: 2–2 (well under ceiling).","Active article drafting months (1–3 per article) require 12–15 hrs/editor/month. Non-drafting months: 6–8 hrs.","A third senior editor should be hired before client count reaches 15 total across the team.","Dev K. is approaching Phase 4 work with Kiran Reddy — petition assembly is the highest-intensity phase."].map(r=>`<div style="display:flex;gap:.75rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.78rem;"><span style="color:#67E8F9;flex-shrink:0;">→</span><span style="opacity:.7;">${r}</span></div>`).join('')}
+    </div>
+  </div>`;
+
+  area.innerHTML += `<div class="view" id="view-op-citations">
+    <div class="page-hdr"><h1>Cohort Opportunities</h1><p>Submission opportunities across all active Pinnacle clients</p></div>
+    <div class="g4" style="margin-bottom:1.25rem;">
+      <div class="stat"><div class="stat-val" style="color:#67E8F9;">58</div><div class="stat-lbl">Total Cohort Opportunities</div></div>
+      <div class="stat"><div class="stat-val">+21/mo</div><div class="stat-lbl">Cohort Velocity</div><div class="stat-delta" style="color:#6EE7B7;">↑ Accelerating</div></div>
+      <div class="stat"><div class="stat-val">9.7</div><div class="stat-lbl">Avg Opportunities / Client</div></div>
+      <div class="stat"><div class="stat-val">100+</div><div class="stat-lbl">Projected (Month 24)</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Opportunities by Client</div>
+      <table class="tbl">
+        <thead><tr><th>Client</th><th>Phase</th><th>Articles Published</th><th>Opportunities</th><th>Status</th><th>On Track</th></tr></thead>
+        <tbody>
+          ${OPS_CLIENTS.map(c=>`<tr>
+            <td style="font-weight:600;">${c.name}</td>
+            <td><span class="bdg" style="background:rgba(103,232,249,.1);color:#67E8F9;">Phase ${c.phase}</span></td>
+            <td style="opacity:.6;">${c.phase>=2?c.phase:1}</td>
+            <td style="font-weight:800;color:#67E8F9;">${c.phase===1?Math.round(c.score*.1):c.phase===2?Math.round(c.score*.4):c.phase>=3?Math.round(c.score*.5):0}</td>
+            <td style="color:#6EE7B7;font-weight:600;">${c.phase>=2?'+'+c.phase*2+'/mo ↑':'+0/mo'}</td>
+            <td><span class="bdg" style="background:${c.risk==='At Risk'?'rgba(248,113,113,.1)':'rgba(110,231,183,.1)'};color:${c.risk==='At Risk'?'#F87171':'#6EE7B7'};">${c.risk==='At Risk'?'At Risk':'On Track'}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+
+  area.innerHTML += `<div class="view" id="view-op-alerts">
+    <div class="page-hdr"><h1>Risk Alerts</h1><p>Clients requiring intervention or monitoring</p></div>
+    <div class="alert" style="background:rgba(248,113,113,.08);border-color:#F87171;color:#FCA5A5;margin-bottom:.75rem;">
+      🚨 <strong>Divya Krishnan</strong> — Phase 2, Month 11 — Engagement dropping. No response to last 2 editor emails. Opportunity velocity stalled at +0/mo. Call recommended within 48 hrs.
+    </div>
+    <div class="alert" style="background:rgba(217,119,6,.08);border-color:#FCD34D;color:#FDE68A;margin-bottom:.75rem;">
+      ⚠️ <strong>Arjun Mehta</strong> — Phase 2, Month 14 — Article 3 revision overdue by 6 days. Impact on Phase 3 start if delayed further. Editor follow-up scheduled.
+    </div>
+    <div class="alert" style="background:rgba(110,231,183,.08);border-color:#6EE7B7;color:#A7F3D0;margin-bottom:.75rem;">
+      ✓ <strong>Kiran Reddy</strong> — Phase 4, Month 22 — Petition assembly 80% complete. On track for Month 24 handoff. No action needed.
+    </div>
+    <div class="card">
+      <div class="card-title">Alert Rules (Auto-Generated)</div>
+      ${["Client has not responded to editor within 10 days → At Risk flag","Opportunity velocity drops to 0/mo for 2+ consecutive months → Monitoring flag","Article revision overdue by 7+ days → Editor escalation","Score below 40 at Month 12 → Phase review call required","Petition readiness score below 80 at Month 16 → Urgent intervention"].map(r=>`<div style="display:flex;gap:.75rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.78rem;"><span style="color:#F87171;flex-shrink:0;">■</span><span style="opacity:.7;">${r}</span></div>`).join('')}
+    </div>
+  </div>`;
+
+  // Populate ops client list
+  setTimeout(()=>{
+    const el=document.getElementById('ops-client-list');
+    if(!el) return;
+    OPS_CLIENTS.forEach(c=>{
+      const phColor={1:"#1E2761",2:"#0891B2",3:"#059669",4:"#DC2626"}[c.phase];
+      const riskColor=c.risk==='At Risk'?'#F87171':c.risk==='Petition Ready'?'#6EE7B7':'#67E8F9';
+      el.innerHTML+=`<div class="client-row" onclick="toast('Opening ${c.name} profile...')">
+        <div class="client-avatar" style="background:${c.color};color:#fff;">${c.init}</div>
+        <div class="client-info"><div class="client-name">${c.name}</div><div class="client-meta">Pinnacle ${c.plan} · Month ${c.month} · ${c.editor}</div></div>
+        <span class="client-phase" style="background:${phColor}22;color:${phColor};">Phase ${c.phase}</span>
+        <div class="client-score" style="color:#67E8F9;">${c.score}</div>
+        <span class="client-risk" style="background:${riskColor}22;color:${riskColor};">${c.risk}</span>
+      </div>`;
+    });
+  },100);
+}
+</script>
+
+<script>
+var ES={},EA=0;
+function EP(q,val,el){var g=document.getElementById('eg'+q);if(!g)return;g.querySelectorAll('.eq-btn').forEach(function(b){b.classList.remove('picked');});el.classList.add('picked');var isNew=!(q in ES);ES[q]=val;if(isNew){EA++;var bar=document.getElementById('e-prog');var cnt=document.getElementById('e-ans-cnt');if(bar)bar.style.width=Math.round((EA/12)*100)+'%';if(cnt)cnt.textContent=EA+' / 12 answered';}}
+function EN(to){var req=to===2?[1,2,3,4]:[5,6,7,8];var miss=req.filter(function(q){return!(q in ES);});if(miss.length>0){miss.forEach(function(q){var g=document.getElementById('eg'+q);if(g){g.style.outline='2px solid #F87171';g.style.borderRadius='8px';setTimeout(function(){g.style.outline='';},2500);}});toast('Please answer all '+miss.length+' remaining question(s) first.');return;}document.querySelectorAll('.esec').forEach(function(s){s.classList.remove('active');});var s=document.getElementById('e-s'+to);if(s)s.classList.add('active');var lbl=document.getElementById('e-sec-lbl');var labs={1:'Section 1 of 3 — Background',2:'Section 2 of 3 — Publications',3:'Section 3 of 3 — Acclaim'};if(lbl&&labs[to])lbl.textContent=labs[to];window.scrollTo({top:0,behavior:'smooth'});}
+function EB(to){document.querySelectorAll('.esec').forEach(function(s){s.classList.remove('active');});var s=document.getElementById('e-s'+to);if(s)s.classList.add('active');var lbl=document.getElementById('e-sec-lbl');var labs={1:'Section 1 of 3 — Background',2:'Section 2 of 3 — Publications',3:'Section 3 of 3 — Acclaim'};if(lbl&&labs[to])lbl.textContent=labs[to];window.scrollTo({top:0,behavior:'smooth'});}
+function ERESET(){ES={};EA=0;document.querySelectorAll('.eq-btn').forEach(function(b){b.classList.remove('picked');});document.querySelectorAll('.esec').forEach(function(s){s.classList.remove('active');});var s1=document.getElementById('e-s1');if(s1)s1.classList.add('active');var bar=document.getElementById('e-prog');if(bar)bar.style.width='0%';var cnt=document.getElementById('e-ans-cnt');if(cnt)cnt.textContent='0 / 12 answered';var lbl=document.getElementById('e-sec-lbl');if(lbl)lbl.textContent='Section 1 of 3 — Background';showView('ev-q');}
+function ECALC(){var req=[9,10,11,12];var miss=req.filter(function(q){return!(q in ES);});if(miss.length>0){miss.forEach(function(q){var g=document.getElementById('eg'+q);if(g){g.style.outline='2px solid #F87171';g.style.borderRadius='8px';setTimeout(function(){g.style.outline='';},2500);}});toast('Please answer all '+miss.length+' remaining question(s).');return;}for(var q=1;q<=12;q++){if(!(q in ES))ES[q]=0;}var total=Object.values(ES).reduce(function(a,b){return a+b;},0);var score=Math.min(100,Math.round((total/196)*100));var tier,color,bg,desc;if(score>=70){tier='Strong Profile';color='#10B981';bg='rgba(16,185,129,.12)';desc='Your profile has solid foundations. With targeted strengthening in the gaps below, you are a strong EB1A candidate.';}else if(score>=45){tier='Building Profile';color='#60A5FA';bg='rgba(96,165,250,.1)';desc='You have a meaningful base to build from. Several evidence categories need development.';}else if(score>=25){tier='Early-Stage Profile';color='#FBBF24';bg='rgba(251,191,36,.1)';desc='Your profile is at an early stage — the ideal time to start. Publishing now gives the longest runway before filing.';}else{tier='Foundation Needed';color='#F87171';bg='rgba(248,113,113,.1)';desc='You are at the beginning of your EB1A journey. Starting now with Pinnacle gives maximum time to build every category.';}var yrs=ES[1]||0,tl=ES[4]||0;var pName,pPrice,pColor,pNote;if(yrs>=15&&tl>=15){pName='Pinnacle Premier';pPrice='$2,299/mo x 24 months';pColor='#A78BFA';pNote='7+ year experience, flexible timeline — ideal for the full 24-month arc with maximum article output and all acclaim categories.';}else if(yrs>=15){pName='Pinnacle Growth';pPrice='$2,499/mo x 18 months';pColor='#818CF8';pNote='Your 7+ year experience puts you in the Pinnacle cohort. 18 months of structured publishing, editorial support, and petition assembly.';}else if(yrs>=10){pName='Luminary';pPrice='$34,999 total / 9 months';pColor='#FBBF24';pNote='With 5-7 years experience, Luminary covers core evidence categories with stronger venue targeting.';}else{pName='Elite';pPrice='$24,999 total / 6 months';pColor='#67E8F9';pNote='At your current stage, Elite covers the core evidence sprint with a 50% refund assurance.';}var cats=[{l:'Professional Experience',v:ES[1]||0,m:20,i:'💼'},{l:'Publications (volume)',v:ES[5]||0,m:20,i:'📄'},{l:'Publication Venues',v:ES[6]||0,m:18,i:'🏛️'},{l:'Peer Review / Judging',v:ES[7]||0,m:15,i:'🔍'},{l:'Speaking / Conferences',v:ES[8]||0,m:18,i:'🎤'},{l:'Awards & Recognition',v:ES[9]||0,m:20,i:'🏆'},{l:'Memberships',v:ES[11]||0,m:15,i:'🎓'},{l:'Recommendation Letters',v:ES[12]||0,m:15,i:'✉️'}];var gH=cats.map(function(cat){var pct=Math.round((cat.v/cat.m)*100);var st=pct>=65?'Strong':pct>=30?'Building':'Gap';var sc=pct>=65?'#10B981':pct>=30?'#60A5FA':'#F87171';return '<div class="e-gap-row"><span style="font-size:1rem;width:20px;">'+cat.i+'</span><span style="flex:1.5;color:#D1FAE5;">'+cat.l+'</span><span style="background:'+sc+'22;color:'+sc+';font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px;width:56px;text-align:center;">'+st+'</span><div style="flex:1;max-width:130px;background:rgba(255,255,255,.08);border-radius:99px;height:6px;overflow:hidden;"><div style="width:'+pct+'%;height:100%;background:'+sc+';border-radius:99px;"></div></div><span style="font-size:.7rem;color:#6B7280;width:30px;text-align:right;">'+pct+'%</span></div>';}).join('');var amap={'Publications (volume)':{i:'📄',t:'Submit your first article to an IEEE or ACM indexed venue. Your editor will identify journals and draft the manuscript with you.'},'Publication Venues':{i:'🏛️',t:'Upgrade to IEEE Transactions, ACM Digital Library, or Springer LNCS. Venue prestige directly strengthens your EB1A evidence.'},'Peer Review / Judging':{i:'🔍',t:'Request a reviewer invitation through Publons or the Web of Science Reviewer Registry.'},'Speaking / Conferences':{i:'🎤',t:'Submit an abstract to 1-2 upcoming IEEE or ACM conferences. Pinnacle editors assist with drafting.'},'Awards & Recognition':{i:'🏆',t:'Research 2-3 domain-specific nominations you are eligible for. Your editor will draft nomination support materials.'},'Memberships':{i:'🎓',t:'Apply for IEEE Senior Member or ACM Professional Member. Join 2-3 relevant technical committees.'},'Recommendation Letters':{i:'✉️',t:'Identify 5-6 recommenders including 2 outside your employer. Your editor will coach each one on EB1A framing.'},'Professional Experience':{i:'💼',t:'Document leadership roles, patents, and high-impact projects to support the Leading Role and High Salary EB1A criteria.'}};var weak=cats.filter(function(c2){return(c2.v/c2.m)<0.4;}).map(function(c2){return c2.l;});var acts=weak.slice(0,4).map(function(l){return amap[l];}).filter(Boolean);acts.push({i:'📋',t:'Book a free 30-minute consultation with an EB1A Experts advisor to walk through your results.'});acts.push({i:'🔗',t:'Set up your Google Scholar profile and verify all existing work is correctly indexed.'});var aH=acts.slice(0,6).map(function(a,i){return '<div style="display:flex;gap:.75rem;padding:.65rem;border-radius:8px;background:rgba(255,255,255,.03);margin-bottom:.4rem;border:1px solid rgba(255,255,255,.06);"><div style="width:26px;height:26px;border-radius:6px;background:rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;">'+a.i+'</div><div><div style="font-size:.7rem;font-weight:700;color:#10B981;margin-bottom:.15rem;">Action '+(i+1)+'</div><div style="font-size:.78rem;color:#9CA3AF;line-height:1.5;">'+a.t+'</div></div></div>';}).join('');var pH='<div style="border-left:3px solid '+pColor+';padding:.75rem 1rem;"><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:.3rem;">Recommended Plan</div><div style="font-size:1.1rem;font-weight:800;color:'+pColor+';margin-bottom:.15rem;">'+pName+'</div><div style="font-size:.82rem;color:#6B7280;margin-bottom:.5rem;">'+pPrice+'</div><div style="font-size:.8rem;color:#9CA3AF;line-height:1.55;">'+pNote+'</div></div>';var ban=document.getElementById('e-banner');if(ban){ban.style.background=bg;ban.style.borderColor=color+'44';}var sc2=document.getElementById('e-score');if(sc2){sc2.textContent=score;sc2.style.color=color;}var tl2=document.getElementById('e-tier');if(tl2){tl2.textContent=tier;tl2.style.color=color;}var dc=document.getElementById('e-desc');if(dc)dc.textContent=desc;var pl=document.getElementById('e-pill');if(pl){pl.textContent='Recommended: '+pName;pl.style.cssText='display:inline-block;padding:.3rem .9rem;border-radius:20px;font-size:.8rem;font-weight:700;background:'+pColor+'22;color:'+pColor+';';}document.getElementById('e-gaps').innerHTML=gH;document.getElementById('e-planbox').innerHTML=pH;document.getElementById('e-acts').innerHTML=aH;showView('ev-r');window.scrollTo({top:0,behavior:'smooth'});toast('Score: '+score+'/100 — '+tier);}
+</script>
+
+</body>
+</html>
